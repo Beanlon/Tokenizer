@@ -198,15 +198,4 @@ public class CommandParser {
         System.out.println("⇒ " + commandFinal);
     }
 
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Enter Command: ");
-        String input = sc.nextLine().trim();
-        String[] tokens = tokenizeInput(input);
-        String[] outVars = {"", "", "", "", "", ""};
-        if (parseCommand(tokens, outVars)) {
-            printClassification(outVars);
-            printDerivation(outVars);
-        }
-    }
 }
