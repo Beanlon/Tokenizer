@@ -145,6 +145,7 @@ public class CommandParser {
         System.out.println(", → (comma)");
         if (!resource.isEmpty())
             System.out.println(resource + " → <resource>");
+        System.out.println(". → (period)");
     }
 
     public static void printDerivation(String[] outVars) {
