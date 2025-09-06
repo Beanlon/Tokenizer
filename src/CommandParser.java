@@ -51,13 +51,8 @@ public class CommandParser {
     public static boolean parseCommand(String[] tokens, String[] outVars) {
         List<String> errors = new ArrayList<>();
         String[][] expectedArrays = {CommandArrays.ACTIONS, null,
-                mergeArrays(CommandArrays.CONCEPTS, CommandArrays.STRUCTURES, CommandArrays.PROBLEM_TYPES), // <topic>
-                null, // "in"
-                CommandArrays.LEVELS, // <level>
-                null, // "mode"
-                CommandArrays.CONSTRAINT_KEYWORDS // constraint-keyword
-        };
-
+                mergeArrays(CommandArrays.CONCEPTS, CommandArrays.STRUCTURES, CommandArrays.PROBLEM_TYPES),
+                null, CommandArrays.LEVELS, null, CommandArrays.CONSTRAINT_KEYWORDS};
         String[] expectedLiterals = {null, "the", null, "in", null, "mode", null};
         int i = 0, o = 0, step = 0;
         while (step < expectedArrays.length) {
@@ -66,41 +61,51 @@ public class CommandParser {
                     outVars[o++] = toCanonical(tokens[i], expectedArrays[step]);
                     i++;
                 } else {
-                    return errors.add("Expected <" + (o == 0 ? "action" : o == 1 ?
+                    errors.add("Expected <" + (o == 0 ? "action" : o == 1 ?
                             "topic" : o == 2 ? "level" : "constraint") + "> at position " + (i+1));
+                    i++;
                 }
             } else if (expectedLiterals != null) {
                 if (i < tokens.length && tokens[i].equalsIgnoreCase(expectedLiterals[step])) {
                     i++;
-                } else return errors.add("Expected '" + expectedLiterals[step] + "' at position " + (i+1));
+                } else {
+                    errors.add("Expected '" + expectedLiterals[step] + "' at position " + (i+1));
+                    i++;
+                }
             }
             step++;
         }
 
         // Constraint value
-        if (outVars[3].equals("using")) {
+        if (outVars[3] != null && outVars[3].equals("using")) {
             if (i < tokens.length && isInArray(tokens[i], CommandArrays.LANGUAGES)) {
                 outVars[4] = toCanonical(tokens[i], CommandArrays.LANGUAGES); i++;
-            } else return errors.add("Expected <language> after 'using' at position " + (i+1));
-        } else if (outVars[3].equals("without")) {
+            } else errors.add("Expected <language> after 'using' at position " + (i+1));
+        } else if (outVars[3] != null && outVars[3].equals("without")) {
             if (i < tokens.length && isInArray(tokens[i], CommandArrays.CONCEPTS)) {
                 outVars[4] = toCanonical(tokens[i], CommandArrays.CONCEPTS); i++;
-            } else return errors.add("Expected <concept> after 'without' at position " + (i+1));
+            } else errors.add("Expected <concept> after 'without' at position " + (i+1));
         }
         // Comma
         if (i < tokens.length && tokens[i].equals(",")) { i++; }
-        else return errors.add("Expected ',' at position " + (i+1));
+        else errors.add("Expected ',' at position " + (i+1));
         // Resource
         if (i+1 < tokens.length && tokens[i].equalsIgnoreCase("with")) {
             String candidate = "with " + tokens[i+1];
             if (isInArray(candidate, CommandArrays.RESOURCES)) {
                 outVars[5] = candidate;
                 i += 2;
-            } else return errors.add("Expected <resource> phrase at position " + (i+1));
-        } else return errors.add("Expected 'with' at position " + (i+1));
+            } else errors.add("Expected <resource> phrase at position " + (i+1));
+        } else errors.add("Expected 'with' at position " + (i+1));
         // No extra tokens
         if (i < tokens.length) {
-            return errors.add("Unexpected extra token(s) at position " + (i+1) + ": " + tokens[i]);
+            for (int j = i; j < tokens.length; j++) {
+                errors.add("Unexpected extra token at position " + (j+1) + ": " + tokens[j]);
+            }
+        }
+        if (!errors.isEmpty()) {
+            for (String err : errors) error(err);
+            return false;
         }
         return true;
     }
