@@ -159,7 +159,20 @@ public class CommandParser {
         System.out.println("⇒ <action> \"the\" <topic> \"in\" <level> \"mode\" <constraint> \",\" <resource> \".\"");
         System.out.println("⇒ " + action + " \"the\" <topic> \"in\" <level> \"mode\" <constraint> \",\" <resource> \".\"");
         System.out.println("⇒ " + action + " the " + topic + " \"in\" <level> \"mode\" <constraint> \",\" <resource> \".\"");
-        System.out.println("⇒ " + action + " the " + topic + " in " + level + " \"mode\" <constraint> \",\" <resource> \".\"");
+        System.out.println("⇒ " + action + " the " + topic + " in " + level + " \"mode\" <constraints> \",\" <resource> \".\"");
+
+        System.out.print("⇒ " + action + " the " + topic + " in " + level + " mode ");
+
+        // Logic for constraintKey
+        if ("using".equals(constraintKey)) {
+            System.out.print("<constraint_keywords> <language>");
+        } else if ("without".equals(constraintKey)) {
+            System.out.print("<constraint_keywords> <concepts>");
+        }
+
+        System.out.println(" \",\" <resource> \".\"");
+        System.out.println("⇒ " + action + " the " + topic + " in " + level + " mode " +
+                constraintFull + "\",\" <resource> \".\"");
         System.out.println("⇒ " + action + " the " + topic + " in " + level + " mode " +
                 constraintFull + ", <resource> \".\"");
         System.out.println("⇒ " + action + " the " + topic + " in " + level + " mode " +
