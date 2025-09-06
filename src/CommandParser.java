@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class CommandParser {
@@ -47,80 +49,72 @@ public class CommandParser {
     }
 
     public static boolean parseCommand(String[] tokens, String[] outVars) {
-        // outVars: [action, topic, level, constraintKey, constraintVal, resource]
-        int i = 0;
-        // <action>
-        if (i < tokens.length && isInArray(tokens[i], CommandArrays.ACTIONS)) {
-            outVars[0] = toCanonical(tokens[i], CommandArrays.ACTIONS); i++;
-        } else return error("Expected <action> at position " + (i+1));
+        List<String> errors = new ArrayList<>();
+        String[][] expectedArrays = {CommandArrays.ACTIONS, null,
+                mergeArrays(CommandArrays.CONCEPTS, CommandArrays.STRUCTURES, CommandArrays.PROBLEM_TYPES), // <topic>
+                null, // "in"
+                CommandArrays.LEVELS, // <level>
+                null, // "mode"
+                CommandArrays.CONSTRAINT_KEYWORDS // constraint-keyword
+        };
 
-        // "the"
-        if (i < tokens.length && tokens[i].equalsIgnoreCase("the")) { i++; }
-        else return error("Expected 'the' at position " + (i+1));
-
-        // <topic>
-        if (i < tokens.length && (
-                isInArray(tokens[i], CommandArrays.CONCEPTS)
-                        || isInArray(tokens[i], CommandArrays.STRUCTURES)
-                        || isInArray(tokens[i], CommandArrays.PROBLEM_TYPES)
-        )) {
-            if (isInArray(tokens[i], CommandArrays.CONCEPTS))
-                outVars[1] = toCanonical(tokens[i], CommandArrays.CONCEPTS);
-            else if (isInArray(tokens[i], CommandArrays.STRUCTURES))
-                outVars[1] = toCanonical(tokens[i], CommandArrays.STRUCTURES);
-            else
-                outVars[1] = toCanonical(tokens[i], CommandArrays.PROBLEM_TYPES);
-            i++;
-        } else return error("Expected <topic> at position " + (i+1));
-
-        // "in"
-        if (i < tokens.length && tokens[i].equalsIgnoreCase("in")) { i++; }
-        else return error("Expected 'in' at position " + (i+1));
-
-        // <level>
-        if (i < tokens.length && isInArray(tokens[i], CommandArrays.LEVELS)) {
-            outVars[2] = toCanonical(tokens[i], CommandArrays.LEVELS); i++;
-        } else return error("Expected <level> at position " + (i+1));
-
-        // "mode"
-        if (i < tokens.length && tokens[i].equalsIgnoreCase("mode")) { i++; }
-        else return error("Expected 'mode' at position " + (i+1));
-
-        // constraint: "using" <language> | "without" <concept>
-        if (i < tokens.length && isInArray(tokens[i], CommandArrays.CONSTRAINT_KEYWORDS)) {
-            outVars[3] = toCanonical(tokens[i], CommandArrays.CONSTRAINT_KEYWORDS); // using/without
-            i++;
-            if (outVars[3].equals("using")) {
-                if (i < tokens.length && isInArray(tokens[i], CommandArrays.LANGUAGES)) {
-                    outVars[4] = toCanonical(tokens[i], CommandArrays.LANGUAGES);
+        String[] expectedLiterals = {null, "the", null, "in", null, "mode", null};
+        int i = 0, o = 0, step = 0;
+        while (step < expectedArrays.length) {
+            if (expectedArrays[step] != null) {
+                if (i < tokens.length && isInArray(tokens[i], expectedArrays[step])) {
+                    outVars[o++] = toCanonical(tokens[i], expectedArrays[step]);
                     i++;
-                } else return error("Expected <language> after 'using' at position " + (i+1));
-            } else if (outVars[3].equals("without")) {
-                if (i < tokens.length && isInArray(tokens[i], CommandArrays.CONCEPTS)) {
-                    outVars[4] = toCanonical(tokens[i], CommandArrays.CONCEPTS);
+                } else {
+                    return errors.add("Expected <" + (o == 0 ? "action" : o == 1 ?
+                            "topic" : o == 2 ? "level" : "constraint") + "> at position " + (i+1));
+                }
+            } else if (expectedLiterals != null) {
+                if (i < tokens.length && tokens[i].equalsIgnoreCase(expectedLiterals[step])) {
                     i++;
-                } else return error("Expected <concept> after 'without' at position " + (i+1));
+                } else return errors.add("Expected '" + expectedLiterals[step] + "' at position " + (i+1));
             }
-        } else return error("Expected constraint ('using' or 'without') at position " + (i+1));
+            step++;
+        }
 
-        // comma
+        // Constraint value
+        if (outVars[3].equals("using")) {
+            if (i < tokens.length && isInArray(tokens[i], CommandArrays.LANGUAGES)) {
+                outVars[4] = toCanonical(tokens[i], CommandArrays.LANGUAGES); i++;
+            } else return errors.add("Expected <language> after 'using' at position " + (i+1));
+        } else if (outVars[3].equals("without")) {
+            if (i < tokens.length && isInArray(tokens[i], CommandArrays.CONCEPTS)) {
+                outVars[4] = toCanonical(tokens[i], CommandArrays.CONCEPTS); i++;
+            } else return errors.add("Expected <concept> after 'without' at position " + (i+1));
+        }
+        // Comma
         if (i < tokens.length && tokens[i].equals(",")) { i++; }
-        else return error("Expected ',' at position " + (i+1));
-
-        // <resource> as phrase: "with example", "with hints", "with diagram"
+        else return errors.add("Expected ',' at position " + (i+1));
+        // Resource
         if (i+1 < tokens.length && tokens[i].equalsIgnoreCase("with")) {
             String candidate = "with " + tokens[i+1];
             if (isInArray(candidate, CommandArrays.RESOURCES)) {
                 outVars[5] = candidate;
                 i += 2;
-            } else return error("Expected <resource> phrase at position " + (i+1));
-        } else return error("Expected 'with' at position " + (i+1));
-
+            } else return errors.add("Expected <resource> phrase at position " + (i+1));
+        } else return errors.add("Expected 'with' at position " + (i+1));
         // No extra tokens
         if (i < tokens.length) {
-            return error("Unexpected extra token(s) at position " + (i+1) + ": " + tokens[i]);
+            return errors.add("Unexpected extra token(s) at position " + (i+1) + ": " + tokens[i]);
         }
         return true;
+    }
+
+    // Helper to merge arrays
+    private static String[] mergeArrays(String[]... arrays) {
+        int total = 0;
+        for (String[] arr : arrays) total += arr.length;
+        String[] merged = new String[total];
+        int idx = 0;
+        for (String[] arr : arrays) {
+            for (String s : arr) merged[idx++] = s;
+        }
+        return merged;
     }
 
     public static boolean error(String msg) {
@@ -166,5 +160,6 @@ public class CommandParser {
                 constraintFull + ", " + resource + " \".\"");
         System.out.println("⇒ " + commandFinal);
     }
+
 
 }
