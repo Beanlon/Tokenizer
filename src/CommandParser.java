@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class CommandParser {
     public static boolean isInArray(String value, String[] array) {
@@ -48,10 +47,8 @@ public class CommandParser {
         return realTokens;
     }
 
-    public static boolean parseCommand(String[] tokens, String[] outVars) {
-        //error collection
-        List<String> errors = new ArrayList<>();
-
+    // New version: collect errors in a list
+    public static boolean parseCommand(String[] tokens, String[] outVars, List<String> errors) {
         // outVars: [action, topic, level, constraintKey, constraintVal, resource]
         int i = 0;
 
@@ -135,13 +132,10 @@ public class CommandParser {
             }
         }
 
-        if (!errors.isEmpty()) {
-            for (String err : errors) error(err);
-            return false;
-        }
-        return true;
+        return errors.isEmpty();
     }
 
+    // Retain original error() for legacy
     public static void error(String msg) {
         System.err.println("Error: " + msg);
     }
@@ -164,6 +158,7 @@ public class CommandParser {
         System.out.println(", → (comma)");
         if (!resource.isEmpty())
             System.out.println(resource + " → <resource>");
+        System.out.println(". → (period)");
     }
 
     public static void printDerivation(String[] outVars) {
@@ -197,5 +192,4 @@ public class CommandParser {
                 constraintFull + ", " + resource + " \".\"");
         System.out.println("⇒ " + commandFinal);
     }
-
 }
