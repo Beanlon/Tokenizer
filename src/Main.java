@@ -12,13 +12,13 @@ public class Main {
         while (!success) {
             System.out.print("Enter command: ");
             String input = scanner.nextLine();
-            String[] tokens = CommandParser.tokenizeInput(input);
+            List<String> errors = new ArrayList<>();
+            String[] tokens = CommandParser.tokenizeInput(input,errors);
 
             // Reset outVars before each attempt
             for (int i = 0; i < outVars.length; i++) outVars[i] = "";
 
             // Collect errors in a list
-            List<String> errors = new ArrayList<>();
             success = CommandParser.parseCommand(tokens, outVars, errors);
 
             if (!success) {

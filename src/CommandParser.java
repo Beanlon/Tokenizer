@@ -16,9 +16,13 @@ public class CommandParser {
         return value;
     }
 
-    public static String[] tokenizeInput(String input) {
+    public static String[] tokenizeInput(String input, List<String> errors) {
         int inLen = input.length();
-        if (inLen > 0 && input.charAt(inLen-1) == '.') input = input.substring(0, inLen-1).trim();
+        if (inLen > 0 && input.charAt(inLen-1) == '.') {
+            input = input.substring(0, inLen-1).trim();
+        } else {
+            errors.add("Input must end with a period.");
+        }
 
         // Insert space before comma
         StringBuilder fixed = new StringBuilder();
