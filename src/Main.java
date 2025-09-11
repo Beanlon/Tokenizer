@@ -1,6 +1,6 @@
-import java.util.Scanner;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
@@ -27,12 +27,21 @@ public class Main {
                 for (String err : errors) {
                     System.out.println(" - " + err);
                 }
-                // Then prompt
-                System.out.print("\nDo you want to try again? (yes/no): ");
-                String answer = scanner.nextLine().trim().toLowerCase();
-                if (!answer.equals("yes")) {
-                    System.out.println("Exiting program.");
-                    break;
+                
+                boolean isValid = false;
+                // Then prompt user to try again or exit
+                while(!isValid){
+                    System.out.print("\nDo you want to try again? (yes/ no): ");
+                    String answer = scanner.nextLine().trim().toLowerCase();
+                    if (answer.equals("yes")) {
+                        isValid = true; // valid input, continue
+                    } else if (answer.equals("no")) {
+                        System.out.println("Exiting program.");
+                        System.exit(0);
+                    } else {
+                        System.out.println("Invalid input please type 'yes' or 'no");
+                        continue;
+                    }   
                 }
             } else {
                 CommandParser.printClassification(outVars);

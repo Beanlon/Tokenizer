@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.List;
 
 public class CommandParser {
@@ -18,6 +17,7 @@ public class CommandParser {
 
     public static String[] tokenizeInput(String input, List<String> errors) {
         int inLen = input.length();
+        
         if (inLen > 0 && input.charAt(inLen-1) == '.') {
             input = input.substring(0, inLen-1).trim();
         } else {
@@ -113,7 +113,7 @@ public class CommandParser {
             }
         } else errors.add("Expected constraint ('using' or 'without') at position " + (i+1));
         i++;
-
+        
         // comma
         if (i < tokens.length && tokens[i].equals(",")) {}
         else errors.add("Expected ',' at position " + (i+1));
