@@ -33,12 +33,16 @@ public class CommandParser {
         }
         input = fixed.toString();
 
+        // using Java, with example
+        // using Java , with example
+
         // Manual tokenization (split on spaces)
         String[] tokens = new String[30];
         int t = 0;
         int last = 0;
         for (int i = 0; i <= input.length(); i++) {
-            char c = (i == input.length()) ? ' ' : input.charAt(i);
+            char c = (i == input.length())
+                    ? ' ' : input.charAt(i);
             if (c == ' ' || i == input.length()) {
                 if (last < i) {
                     tokens[t++] = input.substring(last, i);
