@@ -1,5 +1,5 @@
 public class CommandArrays {
-    public static String[] ACTIONS = {"explain", "practice", "quiz", "review", "compare"};
+    public static String[] ACTIONS = {"Explain", "Practice", "Quiz", "Review", "Compare"};
     public static String[] CONCEPTS = {"variable", "loop", "function", "array", "class"};
     public static String[] STRUCTURES = {"if-statement", "for-loop", "while-loop"};
     public static String[] PROBLEM_TYPES = {"sorting", "recursion", "searching"};
